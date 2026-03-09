@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: black;
+        }
+        canvas {
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="pong" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("pong");
+        const context = canvas.getContext("2d");
+        const paddleWidth = 10, paddleHeight = 100, ballSize = 10;
+
+        let player = {
+            x: 0,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            color: "white",
+            score: 0
+        };
+
+        let computer = {
+            x: canvas.width - paddleWidth,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            color: "white",
+            score: 0
+        };
+
+        let ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            size: ballSize,
+            speed: 4,
+            velocityX: 4,
+            velocityY: 4,
+            color: "white"
+        };
+
+        function drawRect(x, y, width, height, color) {
+            context.fillStyle = color;
+            context.fillRect(x, y, width, height);
+        }
+
+        function drawArc(x, y, size, color) {
+            context.fillStyle = color;
+            context.beginPath();
+            context.arc(x, y, size, 0, Math.PI * 2, false);
+            context.closePath();
+            context.fill();
+        }
+
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.velocityX = -ball.velocityX;
+            ball.speed = 4;
+        }
+
+        canvas.addEventListener("mousemove", getMousePos);
+        function getMousePos(event) {
+            let rect = canvas.getBoundingClientRect();
+            player.y = event.clientY - rect.top - player.height / 2;
+        }
+
+        function update() {
+            ball.x += ball.velocityX;
+            ball.y += ball.velocityY;
+
+            if (ball.y + ball.size > canvas.height || ball.y - ball.size < 0) {
+                ball.velocityY = -ball.velocityY;
+            }
+
+            let playerPaddle = (ball.x < player.x + player.width && ball.y > player.y && ball.y < player.y + player.height);
+            let computerPaddle = (ball.x > computer.x && ball.x < computer.x + computer.width && ball.y > computer.y && ball.y < computer.y + computer.height);
+            
+            if (playerPaddle) {
+                ball.velocityX = -ball.velocityX;
+                ball.speed += 0.5; 
+            }
+
+            if (computerPaddle) {
+                ball.velocityX = -ball.velocityX;
+            }
+
+            if (ball.x < 0) {
+                computer.score++;
+                resetBall();
+            } else if (ball.x > canvas.width) {
+                player.score++;
+                resetBall();
+            }
+        }
+
+        function draw() {
+            drawRect(0, 0, canvas.width, canvas.height, "black");
+            drawRect(player.x, player.y, player.width, player.height, player.color);
+            drawRect(computer.x, computer.y, computer.width, computer.height, computer.color);
+            drawArc(ball.x, ball.y, ball.size, ball.color);
+        }
+
+        function game() {
+            update();
+            draw();
+            requestAnimationFrame(game);
+        }
+        
+        game();
+    </script>
+</body>
+</html>
